@@ -1,8 +1,10 @@
-FROM mcr.microsoft.com/devcontainers/php:1-8.3-bookworm
+FROM mcr.microsoft.com/devcontainers/base:bookworm
+ARG FLUTTER_VERSION=3.47.2
 USER root
-RUN rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.sources \
-    && apt-get update && apt-get install -y --no-install-recommends libpq-dev libzip-dev libicu-dev postgresql-client \
-    && docker-php-ext-install pdo_pgsql pgsql bcmath intl zip \
+RUN apt-get update && apt-get install -y --no-install-recommends curl git unzip xz-utils zip libglu1-mesa python3 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
-WORKDIR /workspaces/studManagement
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git /opt/flutter \
+    && chown -R vscode:vscode /opt/flutter
+ENV PATH="/opt/flutter/bin:${PATH}"
+USER vscode
+RUN flutter config --enable-web --no-analytics && flutter precache --web
